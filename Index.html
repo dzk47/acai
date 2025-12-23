@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Açaí Prime</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+:root{
+ --p:#4c1d95;--s:#6d28d9;--a:#16a34a;--bg:#f8fafc;--c:#fff
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui;background:var(--bg)}
+header{background:linear-gradient(135deg,var(--p),var(--s));color:#fff;padding:30px;text-align:center}
+nav button{margin:5px;padding:10px 18px;border:none;border-radius:999px;font-weight:700}
+section{max-width:900px;margin:auto;padding:20px}
+.card{background:var(--c);border-radius:18px;padding:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);margin-bottom:20px}
+.hidden{display:none}
+.options{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.option{border:2px solid #e5e7eb;border-radius:12px;padding:12px;text-align:center;font-weight:700;cursor:pointer}
+.option.active{border-color:var(--p);background:#ede9fe}
+img{width:100%;border-radius:12px;margin-bottom:8px}
+.total{font-size:1.4rem;font-weight:900;color:var(--p)}
+.cta{width:100%;padding:16px;border:none;border-radius:999px;background:var(--a);color:#fff;font-weight:800}
+input,textarea{width:100%;padding:10px;margin:6px 0}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>Açaí Prime</h1>
+<p>Escolha como pedir 🍧</p>
+<nav>
+<button onclick="show('client')">Cliente</button>
+<button onclick="show('admin')">ADM</button>
+</nav>
+</header>
+
+<section id="client">
+
+<div class="card">
+<h2>🍧 Monte seu Açaí</h2>
+<div class="options" id="sizes"></div>
+<p id="limit"></p>
+<div id="toppings"></div>
+</div>
+
+<div class="card">
+<h2>🔥 Combos Prontos</h2>
+<div class="options" id="combos"></div>
+</div>
+
+<div class="card">
+<h2>Resumo</h2>
+<textarea id="obs" placeholder="Observações"></textarea>
+<p id="summary">Nenhum pedido</p>
+<p>Entrega: R$ <span id="delivery"></span></p>
+<div class="total" id="total">R$ 0,00</div>
+<button class="cta" onclick="send()">Finalizar no WhatsApp</button>
+</div>
+
+</section>
+
+<section id="admin" class="hidden">
+
+<div class="card" id="login">
+<h2>Login ADM</h2>
+<input id="pass" type="password" placeholder="Senha">
+<button class="cta" onclick="login()">Entrar</button>
+</div>
+
+<div class="card hidden" id="panel">
+<h2>Configurações</h2>
+
+<label>Senha ADM</label>
+<input id="adminPass">
+
+<label>Taxa de entrega</label>
+<input id="deliveryFee" type="number">
+
+<label>Acompanhamentos (separados por vírgula)</label>
+<textarea id="tops"></textarea>
+
+<button class="cta" onclick="save()">Salvar</button>
+</div>
+
+</section>
+
+<script>
+let cfg=JSON.parse(localStorage.getItem('cfg'))||{
+ pass:'1234',
+ delivery:5,
+ sizes:[
+  {name:'Açaí Raiz 300ml',price:12,limit:2,img:'https://via.placeholder.com/300x200?text=300ml'},
+  {name:'Açaí Raiz 500ml',price:18,limit:3,img:'https://via.placeholder.com/300x200?text=500ml'},
+  {name:'Açaí Raiz 700ml',price:24,limit:4,img:'https://via.placeholder.com/300x200?text=700ml'}
+ ],
+ toppings:['Banana','Morango','Granola','Leite em pó','Paçoca'],
+ combos:[
+  {name:'Açaí Power Banana',price:20,items:['Banana','Granola'],img:'https://via.placeholder.com/300x200?text=Power'},
+  {name:'Açaí Trufado',price:22,items:['Leite em pó','Chocolate'],img:'https://via.placeholder.com/300x200?text=Trufado'}
+ ]
+};
+
+let sel={mode:null,size:null,combo:null,tops:[]};
+
+function show(id){
+ client.classList.add('hidden');
+ admin.classList.add('hidden');
+ document.getElementById(id).classList.remove('hidden');
+}
+
+function renderSizes(){
+ sizes.innerHTML='';
+ cfg.sizes.forEach(o=>{
+  const d=document.createElement('div');
+  d.className='option';
+  d.innerHTML=`<img src="${o.img}"><strong>${o.name}</strong><br>R$ ${o.price}`;
+  d.onclick=()=>{
+   sel={mode:'free',size:o,combo:null,tops:[]};
+   document.querySelectorAll('.option').forEach(x=>x.classList.remove('active'));
+   d.classList.add('active');
+   limit.innerText=`Até ${o.limit} acompanhamentos`;
+   renderToppings(o);
+   update();
+  };
+  sizes.appendChild(d);
+ });
+}
+
+function renderToppings(o){
+ toppings.innerHTML='';
+ cfg.toppings.forEach(t=>{
+  const l=document.createElement('label');
+  l.innerHTML=`<input type="checkbox"> ${t}`;
+  l.querySelector('input').onchange=e=>{
+   if(e.target.checked){
+    if(sel.tops.length>=o.limit){e.target.checked=false;return}
+    sel.tops.push(t);
+   }else sel.tops=sel.tops.filter(x=>x!==t);
+   update();
+  };
+  toppings.appendChild(l);
+ });
+}
+
+function renderCombos(){
+ combos.innerHTML='';
+ cfg.combos.forEach(c=>{
+  const d=document.createElement('div');
+  d.className='option';
+  d.innerHTML=`<img src="${c.img}"><strong>${c.name}</strong><br>R$ ${c.price}`;
+  d.onclick=()=>{
+   sel={mode:'combo',combo:c,size:null,tops:[]};
+   document.querySelectorAll('.option').forEach(x=>x.classList.remove('active'));
+   d.classList.add('active');
+   limit.innerText='';
+   toppings.innerHTML='';
+   update();
+  };
+  combos.appendChild(d);
+ });
+}
+
+function update(){
+ let total=cfg.delivery;
+ let text='Nenhum pedido';
+ if(sel.mode==='free'){
+  total+=sel.size.price;
+  text=`${sel.size.name} com ${sel.tops.join(', ')||'sem acompanhamento'}`;
+ }
+ if(sel.mode==='combo'){
+  total+=sel.combo.price;
+  text=`${sel.combo.name} (${sel.combo.items.join(', ')})`;
+ }
+ summary.innerText=text;
+ delivery.innerText=cfg.delivery.toFixed(2);
+ totalEl.innerText='R$ '+total.toFixed(2);
+}
+
+function send(){
+ if(!sel.mode)return;
+ const msg=`Pedido:
+${summary.innerText}
+Obs: ${obs.value}
+Total: ${totalEl.innerText}`;
+ window.open('https://wa.me/5599999999999?text='+encodeURIComponent(msg));
+}
+
+function login(){
+ if(pass.value===cfg.pass){
+  login.classList.add('hidden');
+  panel.classList.remove('hidden');
+  adminPass.value=cfg.pass;
+  deliveryFee.value=cfg.delivery;
+  tops.value=cfg.toppings.join(', ');
+ }
+}
+
+function save(){
+ cfg.pass=adminPass.value;
+ cfg.delivery=+deliveryFee.value;
+ cfg.toppings=tops.value.split(',').map(t=>t.trim());
+ localStorage.setItem('cfg',JSON.stringify(cfg));
+ alert('Salvo');
+ location.reload();
+}
+
+renderSizes();
+renderCombos();
+</script>
+
+</body>
+</html>
