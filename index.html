@@ -1,34 +1,97 @@
-<!-- Importando Firebase via CDN para o Navegador -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Açaí Supreme - Delivery</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Montserrat', sans-serif; background-color: #f8f9fa; }
+        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); }
+        .acai-gradient { background: linear-gradient(135deg, #4b0082 0%, #310055 100%); }
+        .product-card img { transition: transform 0.3s ease; }
+        .product-card:hover img { transform: scale(1.1); }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 70px; background: white; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 -5px 20px rgba(0,0,0,0.05); border-radius: 20px 20px 0 0; z-index: 100; }
+        ::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="text-gray-800">
 
-  // Suas credenciais oficiais
-  const firebaseConfig = {
-    apiKey: "AIzaSyB1DaTOer5_cZ-JT15FlZGapNV1nUDrhmE",
-    authDomain: "acai-delibery.firebaseapp.com",
-    databaseURL: "https://acai-delibery-default-rtdb.firebaseio.com",
-    projectId: "acai-delibery",
-    storageBucket: "acai-delibery.firebasestorage.app",
-    messagingSenderId: "476733774850",
-    appId: "1:476733774850:web:0549e47df6ee8dc2e79b1b",
-    measurementId: "G-98GT80SD7J"
-  };
+    <!-- Header / Banner -->
+    <div class="acai-gradient text-white p-8 pb-16 rounded-b-[40px] shadow-2xl relative">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h1 class="text-2xl font-black italic tracking-tighter">AÇAÍ SUPREME</h1>
+                <p class="text-xs opacity-70">📍 Aberto até às 23:00</p>
+            </div>
+            <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-md">
+                🔔
+            </div>
+        </div>
+        
+        <!-- Busca de Endereço Estilizada -->
+        <div class="bg-white rounded-2xl p-2 shadow-xl flex items-center gap-2 overflow-hidden">
+            <button onclick="getGPSLocation()" class="p-2 bg-purple-100 rounded-xl">📍</button>
+            <input type="text" id="address" placeholder="Onde você está agora?" class="w-full outline-none text-sm text-gray-600 px-2">
+        </div>
+    </div>
 
-  // Inicializa o Firebase
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+    <!-- Categorias -->
+    <div class="flex gap-4 p-6 overflow-x-auto">
+        <button class="px-6 py-2 bg-purple-700 text-white rounded-full text-sm font-bold shadow-lg">Todos</button>
+        <button class="px-6 py-2 bg-white text-gray-500 rounded-full text-sm font-bold shadow-sm">Monte o Seu</button>
+        <button class="px-6 py-2 bg-white text-gray-500 rounded-full text-sm font-bold shadow-sm">Combos</button>
+    </div>
 
-  // Função para enviar o pedido para o Banco de Dados Online
-  window.enviarPedidoFirebase = async (pedido) => {
-    try {
-      const pedidosRef = ref(db, 'pedidos');
-      const novoPedidoRef = push(pedidosRef);
-      await set(novoPedidoRef, pedido);
-      console.log("Pedido salvo no Firebase!");
-    } catch (error) {
-      console.error("Erro ao salvar no Firebase:", error);
-      alert("Erro ao conectar com o banco de dados!");
-    }
-  };
-</script>
+    <!-- Grid de Produtos -->
+    <main class="p-4 grid grid-cols-2 gap-4 pb-32">
+        <!-- Card 1 -->
+        <div class="product-card bg-white rounded-[30px] p-3 shadow-md border border-gray-100 relative overflow-hidden" onclick="openProduct(1)">
+            <img src="https://images.unsplash.com/photo-1590301157890-4810ed352733?q=80&w=400" alt="Açaí" class="w-full h-32 object-cover rounded-[25px] mb-2">
+            <h3 class="font-black text-sm text-purple-900 leading-tight">Copo Supreme 500ml</h3>
+            <p class="text-[10px] text-gray-400 mb-2">3 adicionais grátis</p>
+            <div class="flex justify-between items-center">
+                <span class="font-bold text-purple-600">R$ 25,90</span>
+                <button class="bg-purple-700 text-white w-8 h-8 rounded-full font-bold">+</button>
+            </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="product-card bg-white rounded-[30px] p-3 shadow-md border border-gray-100" onclick="openProduct(2)">
+            <img src="https://images.unsplash.com/photo-1553177595-4de2bb0842b9?q=80&w=400" alt="Açaí" class="w-full h-32 object-cover rounded-[25px] mb-2">
+            <h3 class="font-black text-sm text-purple-900 leading-tight">Barca de Açaí G</h3>
+            <p class="text-[10px] text-gray-400 mb-2">Ideal para 2 pessoas</p>
+            <div class="flex justify-between items-center">
+                <span class="font-bold text-purple-600">R$ 49,90</span>
+                <button class="bg-purple-700 text-white w-8 h-8 rounded-full font-bold">+</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Barra de Navegação Inferior -->
+    <nav class="bottom-nav">
+        <button class="text-purple-700 flex flex-col items-center">🏠 <span class="text-[10px] font-bold">Início</span></button>
+        <button class="text-gray-300 flex flex-col items-center">🛒 <span class="text-[10px]">Pedidos</span></button>
+        <button class="text-gray-300 flex flex-col items-center">👤 <span class="text-[10px]">Perfil</span></button>
+    </nav>
+
+    <!-- Carrinho Flutuante -->
+    <div id="cart-float" class="fixed bottom-24 left-4 right-4 bg-purple-900 text-white p-4 rounded-3xl flex justify-between items-center shadow-2xl hidden animate-bounce">
+        <div class="flex items-center gap-3">
+            <span class="bg-white/20 w-8 h-8 flex items-center justify-center rounded-lg">1</span>
+            <div>
+                <p class="text-xs opacity-70">Ver sacola</p>
+                <p class="font-bold">R$ 25,90</p>
+            </div>
+        </div>
+        <button onclick="finalizarPedido()" class="bg-white text-purple-900 px-4 py-2 rounded-xl font-bold text-sm">Finalizar</button>
+    </div>
+
+    <!-- Scripts do Firebase e UI (Mantenha o seu Config aqui) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        // ... (resto do código Firebase que configuramos antes)
+    </script>
+</body>
+</html>
