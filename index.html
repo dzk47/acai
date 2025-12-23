@@ -1,97 +1,88 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Açaí Delivery - Pedir Agora</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        :root { --purple: #4b0082; }
-        .btn-purple { background: var(--purple); color: white; }
-    </style>
-</head>
+<!-- ... (mesmo CSS anterior) ... -->
 <body class="bg-gray-100 pb-24">
-    <header class="bg-[#4b0082] text-white p-6 text-center rounded-b-3xl shadow-lg">
-        <h1 class="text-2xl font-bold italic">Açaí Supreme</h1>
-        <p class="text-xs opacity-80">O melhor da região na sua porta</p>
-    </header>
+    <!-- ... (header anterior) ... -->
 
     <main class="p-4 max-w-md mx-auto space-y-6">
-        <!-- SEÇÃO ENDEREÇO -->
         <div class="bg-white p-4 rounded-2xl shadow-sm">
             <h2 class="font-bold mb-3 flex items-center gap-2">📍 Entrega</h2>
+            
+            <!-- Botão de GPS -->
+            <button onclick="getGPSLocation()" class="w-full bg-green-100 text-green-700 border border-green-200 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 mb-3">
+                📡 Usar minha localização atual (GPS)
+            </button>
+            
+            <div class="relative flex items-center mb-2">
+                <div class="flex-grow border-t border-gray-200"></div>
+                <span class="flex-shrink mx-4 text-gray-400 text-xs italic">ou digite</span>
+                <div class="flex-grow border-t border-gray-200"></div>
+            </div>
+
             <input type="text" id="address" placeholder="Rua, Número, Bairro, Cidade" class="w-full border p-3 rounded-xl text-sm mb-2">
-            <button onclick="calcDistancia()" class="w-full bg-blue-600 text-white py-2 rounded-xl text-sm font-bold">Calcular Frete</button>
-            <div id="taxa-info" class="mt-2 text-sm text-gray-600 hidden"></div>
+            <button onclick="calcDistanciaManual()" class="w-full bg-blue-600 text-white py-2 rounded-xl text-sm font-bold">Calcular Frete</button>
+            
+            <div id="taxa-info" class="mt-2 text-sm text-gray-600 hidden bg-blue-50 p-2 rounded-lg text-center"></div>
         </div>
 
-        <!-- CARDÁPIO -->
-        <h3 class="font-bold text-lg text-purple-900">Escolha seu Açaí</h3>
-        <div id="menu-container" class="space-y-3">
-            <!-- JS vai preencher aqui -->
-        </div>
+        <!-- ... (resto do cardápio igual) ... -->
     </main>
 
-    <!-- CARRINHO FLUTUANTE -->
-    <div id="cart-footer" class="fixed bottom-0 left-0 w-full bg-white p-4 border-t shadow-2xl flex justify-between items-center hidden">
-        <div>
-            <span class="text-xs text-gray-400">Total + Frete</span>
-            <p id="total-price" class="text-xl font-bold text-purple-800">R$ 0,00</p>
-        </div>
-        <button onclick="finalizarPedido()" class="btn-purple px-8 py-3 rounded-2xl font-bold">Enviar Pedido</button>
-    </div>
-
     <script>
-        let settings = JSON.parse(localStorage.getItem('acai_settings')) || { taxaKm: 2.0, storeCoords: {lat: -23.55, lon: -46.63}, phone: "5511999999999" };
-        let menu = JSON.parse(localStorage.getItem('acai_menu')) || [{id:1, name:"Açaí 500ml", price: 20}];
-        let currentSelection = null;
-        let deliveryData = { km: 0, taxa: 0, addr: "" };
+        // Armazena as coordenadas para mandar ao motoboy
+        let clientCoords = { lat: null, lon: null };
 
-        function render() {
-            const container = document.getElementById('menu-container');
-            container.innerHTML = menu.map(item => `
-                <div onclick="selectItem(${item.id})" id="item-${item.id}" class="bg-white p-4 rounded-2xl flex justify-between items-center cursor-pointer border-2 border-transparent transition-all">
-                    <div><h4 class="font-bold">${item.name}</h4><p class="text-xs text-gray-400">Clique para selecionar</p></div>
-                    <span class="font-bold text-purple-600">R$ ${parseFloat(item.price).toFixed(2)}</span>
-                </div>
-            `).join('');
+        async function getGPSLocation() {
+            if (!navigator.geolocation) return alert("GPS não suportado pelo seu navegador.");
+
+            const btn = event.target;
+            btn.innerText = "📍 Localizando...";
+
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                clientCoords.lat = pos.coords.latitude;
+                clientCoords.lon = pos.coords.longitude;
+
+                // Converter coordenadas em nome de rua (Reverse Geocoding)
+                try {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${clientCoords.lat}&lon=${clientCoords.lon}`);
+                    const data = await res.json();
+                    document.getElementById('address').value = data.display_name;
+                    processarDistancia(clientCoords.lat, clientCoords.lon, data.display_name);
+                } catch (e) {
+                    processarDistancia(clientCoords.lat, clientCoords.lon, "Localização via GPS");
+                }
+                btn.innerText = "✅ Localização Fixada";
+            }, (err) => {
+                alert("Erro ao obter localização. Verifique as permissões do GPS.");
+                btn.innerText = "📡 Usar minha localização atual (GPS)";
+            });
         }
 
-        async function calcDistancia() {
+        async function calcDistanciaManual() {
             const addr = document.getElementById('address').value;
             if(!addr) return alert("Digite o endereço!");
             
-            // Simulação de busca de coordenadas (Geocoding)
             const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr)}`);
             const data = await res.json();
             if(!data[0]) return alert("Endereço não localizado!");
 
-            const lat = data[0].lat; const lon = data[0].lon;
-            // Cálculo simplificado de distância (Haversine/Linha reta para este exemplo)
-            const dist = Math.sqrt(Math.pow(lat - settings.storeCoords.lat, 2) + Math.pow(lon - settings.storeCoords.lon, 2)) * 111; // aprox km
+            clientCoords.lat = data[0].lat;
+            clientCoords.lon = data[0].lon;
+            processarDistancia(data[0].lat, data[0].lon, addr);
+        }
+
+        function processarDistancia(lat, lon, addr) {
+            let settings = JSON.parse(localStorage.getItem('acai_settings')) || { taxaKm: 2.0, storeCoords: {lat: -23.55, lon: -46.63} };
+            
+            // Cálculo de distância
+            const dist = Math.sqrt(Math.pow(lat - settings.storeCoords.lat, 2) + Math.pow(lon - settings.storeCoords.lon, 2)) * 111;
             
             deliveryData.km = dist.toFixed(1);
             deliveryData.taxa = dist * settings.taxaKm;
             deliveryData.addr = addr;
 
             const info = document.getElementById('taxa-info');
-            info.innerHTML = `🛵 Distância: ${deliveryData.km}km | Taxa: <b>R$ ${deliveryData.taxa.toFixed(2)}</b>`;
+            info.innerHTML = `🛵 Distância: ${deliveryData.km}km<br>Taxa: <b>R$ ${deliveryData.taxa.toFixed(2)}</b>`;
             info.classList.remove('hidden');
             updateTotal();
-        }
-
-        function selectItem(id) {
-            currentSelection = menu.find(i => i.id === id);
-            document.querySelectorAll('#menu-container > div').forEach(d => d.style.borderColor = 'transparent');
-            document.getElementById(`item-${id}`).style.borderColor = '#4b0082';
-            document.getElementById('cart-footer').classList.remove('hidden');
-            updateTotal();
-        }
-
-        function updateTotal() {
-            if(!currentSelection) return;
-            const total = parseFloat(currentSelection.price) + deliveryData.taxa;
-            document.getElementById('total-price').innerText = `R$ ${total.toFixed(2)}`;
         }
 
         function finalizarPedido() {
@@ -103,21 +94,21 @@
                 item: currentSelection.name,
                 total: (parseFloat(currentSelection.price) + deliveryData.taxa).toFixed(2),
                 taxa: deliveryData.taxa.toFixed(2),
+                coords: clientCoords, // MANDA AS COORDENADAS PARA O MOTOBOY
                 status: 'Pendente'
             };
 
-            // Salva para o Motoboy ver
             let pedidos = JSON.parse(localStorage.getItem('pedidos_fila')) || [];
             pedidos.push(pedido);
             localStorage.setItem('pedidos_fila', JSON.stringify(pedidos));
 
-            // Envia WhatsApp
-            const msg = `*NOVO PEDIDO*%0A*Item:* ${pedido.item}%0A*Endereço:* ${pedido.cliente}%0A*Taxa:* R$ ${pedido.taxa}%0A*Total:* R$ ${pedido.total}`;
+            // Link do Maps para o WhatsApp do dono
+            const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${clientCoords.lat},${clientCoords.lon}`;
+            const msg = `*NOVO PEDIDO*%0A*Item:* ${pedido.item}%0A*Endereço:* ${pedido.cliente}%0A*Localização exata:* ${mapsUrl}%0A*Total:* R$ ${pedido.total}`;
+            
             window.open(`https://wa.me/${settings.phone}?text=${msg}`);
             alert("Pedido enviado!");
         }
-
-        render();
+        // ... (resto das funções de renderização do menu) ...
     </script>
 </body>
-</html>
