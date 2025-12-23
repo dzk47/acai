@@ -1,27 +1,78 @@
-<!-- Design Dark para Motoboy -->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motoboy - Painel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
 <body class="bg-[#0f111a] text-white p-6">
-    <div class="flex justify-between items-center mb-10">
-        <h1 class="text-3xl font-black italic text-purple-500 tracking-tighter">PILOTO HUB</h1>
-        <div class="flex items-center gap-2 bg-green-500/10 text-green-500 px-3 py-1 rounded-full text-xs font-bold border border-green-500/20">
-            <span class="animate-pulse">●</span> ONLINE
-        </div>
+
+    <h1 class="text-2xl font-black text-purple-500 mb-6">ENTREGAS ATIVAS</h1>
+
+    <div id="lista-pedidos" class="space-y-4">
+        <p class="text-gray-500 text-center">Conectando ao banco...</p>
     </div>
 
-    <!-- Lista de Entregas -->
-    <div id="lista-entregas" class="space-y-6">
-        <!-- Exemplo de Card de Entrega -->
-        <div class="bg-[#161b22] p-6 rounded-[35px] border border-gray-800 shadow-2xl">
-            <div class="flex justify-between mb-4">
-                <span class="text-xs font-bold text-gray-500 uppercase tracking-widest">Pedido #4521</span>
-                <span class="text-purple-400 font-bold">R$ 8,50 taxa</span>
-            </div>
-            <p class="text-xl font-bold mb-1">Copo Supreme 500ml</p>
-            <p class="text-sm text-gray-400 mb-6 italic">📍 Rua das Flores, 123 - Centro</p>
-            
-            <div class="flex gap-3">
-                <button class="flex-1 bg-blue-600 py-4 rounded-2xl font-black text-xs uppercase">Mapa GPS</button>
-                <button class="flex-1 bg-green-600 py-4 rounded-2xl font-black text-xs uppercase">Entregue</button>
-            </div>
-        </div>
-    </div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB1DaTOer5_cZ-JT15FlZGapNV1nUDrhmE",
+            authDomain: "acai-delibery.firebaseapp.com",
+            databaseURL: "https://acai-delibery-default-rtdb.firebaseio.com",
+            projectId: "acai-delibery",
+            storageBucket: "acai-delibery.firebasestorage.app",
+            messagingSenderId: "476733774850",
+            appId: "1:476733774850:web:0549e47df6ee8dc2e79b1b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        const pedidosRef = ref(db, 'pedidos');
+
+        // Escuta o banco de dados em tempo real
+        onValue(pedidosRef, (snapshot) => {
+            const data = snapshot.val();
+            const container = document.getElementById('lista-pedidos');
+            container.innerHTML = "";
+
+            if (!data) {
+                container.innerHTML = "<p class='text-center text-gray-600'>Nenhum pedido pendente 😴</p>";
+                return;
+            }
+
+            // Toca som ao receber pedido
+            new Audio('https://assets.mixkit.co/sfx/preview/mixkit-software-interface-start-2574.mp3').play();
+
+            for (let id in data) {
+                const p = data[id];
+                container.innerHTML += `
+                    <div class="bg-[#161b22] p-5 rounded-[30px] border border-gray-800 shadow-xl">
+                        <div class="flex justify-between text-[10px] text-purple-400 font-bold mb-2">
+                            <span>HORA: ${p.hora}</span>
+                            <span>#${id.slice(-4)}</span>
+                        </div>
+                        <h2 class="text-xl font-bold">${p.item}</h2>
+                        <p class="text-sm text-gray-400 mt-1 italic">📍 ${p.cliente}</p>
+                        
+                        <div class="flex gap-2 mt-5">
+                            <a href="https://www.google.com/maps/search/?api=1&query=${p.coords.lat},${p.coords.lon}" 
+                               target="_blank" class="flex-1 bg-blue-600 py-3 rounded-xl text-center font-bold text-xs">VER MAPA</a>
+                            <button onclick="window.concluir('${id}')" class="flex-1 bg-green-600 py-3 rounded-xl font-bold text-xs">ENTREGUE</button>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+
+        window.concluir = (id) => {
+            if(confirm("Confirmar que entregou?")) {
+                remove(ref(db, `pedidos/${id}`));
+            }
+        };
+    </script>
 </body>
+</html>
