@@ -1,54 +1,38 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Motoboy</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-slate-900 text-white p-4">
-    <header class="mb-6 flex justify-between items-center">
-        <h1 class="text-xl font-bold text-yellow-400">🏍️ Entregas Ativas</h1>
-        <button onclick="location.reload()" class="bg-slate-700 p-2 rounded-lg text-xs">Atualizar</button>
-    </header>
-
-    <div id="lista-entregas" class="space-y-4">
-        <!-- Pedidos aqui -->
-    </div>
-
+<!-- ... (mesmo cabeçalho do motoboy anterior) ... -->
     <script>
         function carregarEntregas() {
             const pedidos = JSON.parse(localStorage.getItem('pedidos_fila')) || [];
             const container = document.getElementById('lista-entregas');
             
             if(pedidos.length === 0) {
-                container.innerHTML = '<p class="text-center text-slate-500 mt-10">Nenhum pedido para entregar.</p>';
+                container.innerHTML = '<p class="text-center text-slate-500 mt-10">Nenhum pedido pendente.</p>';
                 return;
             }
 
             container.innerHTML = pedidos.map((p, idx) => `
-                <div class="bg-slate-800 p-4 rounded-2xl border-l-4 border-yellow-500">
+                <div class="bg-slate-800 p-4 rounded-2xl border-l-4 border-yellow-500 mb-4">
                     <div class="flex justify-between items-start mb-2">
                         <span class="text-xs text-slate-400">#${p.id}</span>
-                        <span class="bg-yellow-500 text-black text-[10px] font-bold px-2 py-1 rounded">FRETE: R$ ${p.taxa}</span>
+                        <span class="bg-green-600 text-white text-[10px] font-bold px-2 py-1 rounded">GANHO: R$ ${p.taxa}</span>
                     </div>
                     <p class="font-bold text-lg">${p.item}</p>
-                    <p class="text-sm text-slate-300 mt-2 italic">📍 ${p.cliente}</p>
-                    <button onclick="concluir(${idx})" class="w-full bg-green-600 mt-4 py-3 rounded-xl font-bold">Marcar como Entregue</button>
+                    <p class="text-sm text-slate-300 mt-1 italic">📍 ${p.cliente}</p>
+                    
+                    <div class="flex gap-2 mt-4">
+                        <!-- BOTÃO DE MAPA REAL -->
+                        <a href="https://www.google.com/maps/search/?api=1&query=${p.coords.lat},${p.coords.lon}" 
+                           target="_blank"
+                           class="flex-1 bg-blue-600 text-center py-3 rounded-xl font-bold text-sm">
+                           🗺️ Abrir Mapa
+                        </a>
+                        
+                        <button onclick="concluir(${idx})" class="flex-1 bg-green-600 py-3 rounded-xl font-bold text-sm">
+                           ✅ Entregue
+                        </button>
+                    </div>
                 </div>
             `).join('');
         }
-
-        function concluir(idx) {
-            let pedidos = JSON.parse(localStorage.getItem('pedidos_fila')) || [];
-            pedidos.splice(idx, 1);
-            localStorage.setItem('pedidos_fila', JSON.stringify(pedidos));
-            carregarEntregas();
-        }
-
-        carregarEntregas();
-        // Atualiza a cada 30 segundos sozinho
-        setInterval(carregarEntregas, 30000);
+        // ... (resto do script igual) ...
     </script>
-</body>
-</html>
+<!-- ... -->
