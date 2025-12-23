@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADM - Gerenciar Loja</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 p-4">
+    <h1 class="text-2xl font-bold mb-6 text-purple-900">Configurações da Loja</h1>
+
+    <div class="space-y-6">
+        <!-- CONFIGS GERAIS -->
+        <div class="bg-white p-4 rounded-xl shadow">
+            <h2 class="font-bold mb-4 border-b pb-2">Geral & Frete</h2>
+            <label class="block text-sm mb-1">Valor por KM (R$)</label>
+            <input type="number" id="taxa-km" class="w-full border p-2 rounded mb-4">
+            
+            <label class="block text-sm mb-1">WhatsApp da Loja</label>
+            <input type="text" id="loja-fone" class="w-full border p-2 rounded mb-4">
+            
+            <button onclick="saveGeneral()" class="w-full bg-purple-600 text-white p-2 rounded font-bold">Salvar Configs</button>
+        </div>
+
+        <!-- GERENCIAR CARDÁPIO -->
+        <div class="bg-white p-4 rounded-xl shadow">
+            <h2 class="font-bold mb-4 border-b pb-2">Cardápio</h2>
+            <div class="flex gap-2 mb-4">
+                <input type="text" id="new-name" placeholder="Produto" class="flex-1 border p-2 rounded text-sm">
+                <input type="number" id="new-price" placeholder="R$" class="w-20 border p-2 rounded text-sm">
+                <button onclick="addItem()" class="bg-green-600 text-white px-4 rounded font-bold">+</button>
+            </div>
+            <div id="admin-menu" class="space-y-2">
+                <!-- Itens aqui -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let settings = JSON.parse(localStorage.getItem('acai_settings')) || { taxaKm: 2.0, phone: "5511999999999", storeCoords: {lat: -23.55, lon: -46.63} };
+        let menu = JSON.parse(localStorage.getItem('acai_menu')) || [];
+
+        function init() {
+            document.getElementById('taxa-km').value = settings.taxaKm;
+            document.getElementById('loja-fone').value = settings.phone;
+            renderMenu();
+        }
+
+        function saveGeneral() {
+            settings.taxaKm = parseFloat(document.getElementById('taxa-km').value);
+            settings.phone = document.getElementById('loja-fone').value;
+            localStorage.setItem('acai_settings', JSON.stringify(settings));
+            alert("Salvo!");
+        }
+
+        function renderMenu() {
+            const container = document.getElementById('admin-menu');
+            container.innerHTML = menu.map((item, idx) => `
+                <div class="flex justify-between items-center bg-gray-50 p-2 rounded border">
+                    <span class="text-sm">${item.name} - <b>R$ ${parseFloat(item.price).toFixed(2)}</b></span>
+                    <button onclick="removeItem(${idx})" class="text-red-500 font-bold">Excluir</button>
+                </div>
+            `).join('');
+        }
+
+        function addItem() {
+            const name = document.getElementById('new-name').value;
+            const price = document.getElementById('new-price').value;
+            if(!name || !price) return;
+            menu.push({ id: Date.now(), name, price: parseFloat(price) });
+            localStorage.setItem('acai_menu', JSON.stringify(menu));
+            renderMenu();
+        }
+
+        function removeItem(idx) {
+            menu.splice(idx, 1);
+            localStorage.setItem('acai_menu', JSON.stringify(menu));
+            renderMenu();
+        }
+
+        init();
+    </script>
+</body>
+</html>
