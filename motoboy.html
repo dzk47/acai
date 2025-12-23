@@ -1,47 +1,27 @@
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-  const firebaseConfig = { /* COLE O SEU CONFIG AQUI NOVAMENTE */ };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-
-  // OUVIR PEDIDOS EM TEMPO REAL
-  const pedidosRef = ref(db, 'pedidos');
-  onValue(pedidosRef, (snapshot) => {
-    const pedidos = snapshot.val();
-    const container = document.getElementById('lista-entregas');
-    container.innerHTML = ""; // Limpa a lista antes de atualizar
-
-    if (!pedidos) {
-      container.innerHTML = "<p class='text-center'>Nenhuma entrega agora.</p>";
-      return;
-    }
-
-    // Toca um som de alerta se quiser
-    // new Audio('alerta.mp3').play();
-
-    for (let id in pedidos) {
-      const p = pedidos[id];
-      container.innerHTML += `
-        <div class="bg-slate-800 p-4 rounded-2xl mb-4 border-l-4 border-yellow-500">
-           <p class="font-bold text-lg">${p.item}</p>
-           <p class="text-sm text-slate-300">📍 ${p.cliente}</p>
-           <div class="flex gap-2 mt-4">
-              <a href="https://www.google.com/maps/search/?api=1&query=${p.coords.lat},${p.coords.lon}" 
-                 target="_blank" class="flex-1 bg-blue-600 py-2 rounded-lg text-center font-bold">🗺️ Ver Mapa</a>
-              <button onclick="marcarEntregue('${id}')" class="flex-1 bg-green-600 py-2 rounded-lg font-bold">✅ Entregue</button>
-           </div>
+<!-- Design Dark para Motoboy -->
+<body class="bg-[#0f111a] text-white p-6">
+    <div class="flex justify-between items-center mb-10">
+        <h1 class="text-3xl font-black italic text-purple-500 tracking-tighter">PILOTO HUB</h1>
+        <div class="flex items-center gap-2 bg-green-500/10 text-green-500 px-3 py-1 rounded-full text-xs font-bold border border-green-500/20">
+            <span class="animate-pulse">●</span> ONLINE
         </div>
-      `;
-    }
-  });
+    </div>
 
-  // Função para deletar o pedido quando o motoboy entregar
-  window.marcarEntregue = (id) => {
-    if(confirm("Confirmar entrega?")) {
-      remove(ref(db, `pedidos/${id}`));
-    }
-  };
-</script>
+    <!-- Lista de Entregas -->
+    <div id="lista-entregas" class="space-y-6">
+        <!-- Exemplo de Card de Entrega -->
+        <div class="bg-[#161b22] p-6 rounded-[35px] border border-gray-800 shadow-2xl">
+            <div class="flex justify-between mb-4">
+                <span class="text-xs font-bold text-gray-500 uppercase tracking-widest">Pedido #4521</span>
+                <span class="text-purple-400 font-bold">R$ 8,50 taxa</span>
+            </div>
+            <p class="text-xl font-bold mb-1">Copo Supreme 500ml</p>
+            <p class="text-sm text-gray-400 mb-6 italic">📍 Rua das Flores, 123 - Centro</p>
+            
+            <div class="flex gap-3">
+                <button class="flex-1 bg-blue-600 py-4 rounded-2xl font-black text-xs uppercase">Mapa GPS</button>
+                <button class="flex-1 bg-green-600 py-4 rounded-2xl font-black text-xs uppercase">Entregue</button>
+            </div>
+        </div>
+    </div>
+</body>
