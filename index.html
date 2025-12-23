@@ -11,7 +11,7 @@
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui;background:var(--bg)}
 header{background:linear-gradient(135deg,var(--p),var(--s));color:#fff;padding:30px;text-align:center}
-nav button{margin:5px;padding:10px 18px;border:none;border-radius:999px;font-weight:700}
+nav button{margin:5px;padding:10px 18px;border:none;border-radius:999px;font-weight:700;cursor:pointer}
 section{max-width:900px;margin:auto;padding:20px}
 .card{background:var(--c);border-radius:18px;padding:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);margin-bottom:20px}
 .hidden{display:none}
@@ -20,7 +20,7 @@ section{max-width:900px;margin:auto;padding:20px}
 .option.active{border-color:var(--p);background:#ede9fe}
 img{width:100%;border-radius:12px;margin-bottom:8px}
 .total{font-size:1.4rem;font-weight:900;color:var(--p)}
-.cta{width:100%;padding:16px;border:none;border-radius:999px;background:var(--a);color:#fff;font-weight:800}
+.cta{width:100%;padding:16px;border:none;border-radius:999px;background:var(--a);color:#fff;font-weight:800;cursor:pointer}
 input,textarea{width:100%;padding:10px;margin:6px 0}
 </style>
 </head>
@@ -29,14 +29,14 @@ input,textarea{width:100%;padding:10px;margin:6px 0}
 
 <header>
 <h1>Açaí Prime</h1>
-<p>Escolha como pedir 🍧</p>
+<p>Delivery Profissional 🍧</p>
 <nav>
-<button onclick="show('client')">Cliente</button>
-<button onclick="show('admin')">ADM</button>
+<button onclick="showClient()">Cliente</button>
+<button onclick="showAdmin()">ADM</button>
 </nav>
 </header>
 
-<section id="client">
+<section id="clientSection">
 
 <div class="card">
 <h2>🍧 Monte seu Açaí</h2>
@@ -54,23 +54,23 @@ input,textarea{width:100%;padding:10px;margin:6px 0}
 <h2>Resumo</h2>
 <textarea id="obs" placeholder="Observações"></textarea>
 <p id="summary">Nenhum pedido</p>
-<p>Entrega: R$ <span id="delivery"></span></p>
-<div class="total" id="total">R$ 0,00</div>
+<p>Entrega: R$ <span id="deliveryValue">0.00</span></p>
+<div class="total" id="totalValue">R$ 0,00</div>
 <button class="cta" onclick="send()">Finalizar no WhatsApp</button>
 </div>
 
 </section>
 
-<section id="admin" class="hidden">
+<section id="adminSection" class="hidden">
 
-<div class="card" id="login">
+<div class="card" id="loginBox">
 <h2>Login ADM</h2>
-<input id="pass" type="password" placeholder="Senha">
-<button class="cta" onclick="login()">Entrar</button>
+<input id="adminLoginPass" type="password" placeholder="Senha">
+<button class="cta" onclick="loginAdmin()">Entrar</button>
 </div>
 
-<div class="card hidden" id="panel">
-<h2>Configurações</h2>
+<div class="card hidden" id="adminPanel">
+<h2>Painel ADM</h2>
 
 <label>Senha ADM</label>
 <input id="adminPass">
@@ -81,7 +81,7 @@ input,textarea{width:100%;padding:10px;margin:6px 0}
 <label>Acompanhamentos (separados por vírgula)</label>
 <textarea id="tops"></textarea>
 
-<button class="cta" onclick="save()">Salvar</button>
+<button class="cta" onclick="save()">Salvar Configurações</button>
 </div>
 
 </section>
@@ -104,10 +104,14 @@ let cfg=JSON.parse(localStorage.getItem('cfg'))||{
 
 let sel={mode:null,size:null,combo:null,tops:[]};
 
-function show(id){
- client.classList.add('hidden');
- admin.classList.add('hidden');
- document.getElementById(id).classList.remove('hidden');
+function showClient(){
+ clientSection.classList.remove('hidden');
+ adminSection.classList.add('hidden');
+}
+
+function showAdmin(){
+ clientSection.classList.add('hidden');
+ adminSection.classList.remove('hidden');
 }
 
 function renderSizes(){
@@ -165,6 +169,7 @@ function renderCombos(){
 function update(){
  let total=cfg.delivery;
  let text='Nenhum pedido';
+
  if(sel.mode==='free'){
   total+=sel.size.price;
   text=`${sel.size.name} com ${sel.tops.join(', ')||'sem acompanhamento'}`;
@@ -173,9 +178,10 @@ function update(){
   total+=sel.combo.price;
   text=`${sel.combo.name} (${sel.combo.items.join(', ')})`;
  }
+
  summary.innerText=text;
- delivery.innerText=cfg.delivery.toFixed(2);
- totalEl.innerText='R$ '+total.toFixed(2);
+ deliveryValue.innerText=cfg.delivery.toFixed(2);
+ totalValue.innerText='R$ '+total.toFixed(2);
 }
 
 function send(){
@@ -183,26 +189,29 @@ function send(){
  const msg=`Pedido:
 ${summary.innerText}
 Obs: ${obs.value}
-Total: ${totalEl.innerText}`;
+Total: ${totalValue.innerText}`;
  window.open('https://wa.me/5599999999999?text='+encodeURIComponent(msg));
 }
 
-function login(){
- if(pass.value===cfg.pass){
-  login.classList.add('hidden');
-  panel.classList.remove('hidden');
+/* ===== ADM ===== */
+function loginAdmin(){
+ if(adminLoginPass.value===cfg.pass){
+  loginBox.classList.add('hidden');
+  adminPanel.classList.remove('hidden');
   adminPass.value=cfg.pass;
   deliveryFee.value=cfg.delivery;
   tops.value=cfg.toppings.join(', ');
+ }else{
+  alert('Senha incorreta');
  }
 }
 
 function save(){
  cfg.pass=adminPass.value;
- cfg.delivery=+deliveryFee.value;
+ cfg.delivery=Number(deliveryFee.value);
  cfg.toppings=tops.value.split(',').map(t=>t.trim());
  localStorage.setItem('cfg',JSON.stringify(cfg));
- alert('Salvo');
+ alert('Configurações salvas');
  location.reload();
 }
 
