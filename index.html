@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Studio Pro | Agendamento Online</title>
+    <title>Studio Pro | Agendamento & Gestão</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Playfair+Display:ital,wght@1,500;1,600&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         :root { --primary: #C5A059; --bg: #FAF9F6; --text: #1A1A1A; --card: #FFFFFF; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); transition: 0.5s; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); scroll-behavior: smooth; transition: 0.5s; }
         h1, h2, h3, h4 { font-family: 'Playfair Display', serif; }
         .btn-theme { background: var(--primary); color: white; transition: 0.3s; font-weight: bold; border-radius: 1rem; }
         .btn-theme:hover { filter: brightness(90%); transform: translateY(-2px); }
@@ -33,7 +33,7 @@
     <nav class="p-6 flex justify-between items-center max-w-6xl mx-auto sticky top-0 z-50 backdrop-blur-xl">
         <div class="flex items-center gap-4">
             <h1 id="brand-name" class="italic text-2xl font-medium leading-none text-stone-900 italic">Studio Pro</h1>
-            <a id="link-insta" href="#" target="_blank" class="text-stone-400 hover:text-stone-900 transition-all">
+            <a id="link-insta" href="#" target="_blank" class="text-stone-400 hover:text-pink-500 transition-all">
                 <i data-lucide="instagram" class="w-5 h-5"></i>
             </a>
         </div>
@@ -45,16 +45,16 @@
     <!-- [CLIENTE] -->
     <main id="view-cliente" class="view-section max-w-2xl mx-auto p-6 pb-24">
         <header class="text-center py-16">
-            <h2 id="client-slogan" class="text-4xl lg:text-5xl font-light mb-4 italic leading-tight">Carregando Studio...</h2>
-            <p class="text-stone-400 text-[10px] uppercase tracking-[0.5em] font-bold">Agendamento Online</p>
+            <h2 id="client-slogan" class="text-4xl lg:text-5xl font-light mb-4 italic leading-tight text-stone-900">Carregando Studio...</h2>
+            <p class="text-stone-400 text-[10px] uppercase tracking-[0.5em] font-bold">Reserva Online Profissional</p>
         </header>
 
-        <div class="glass p-8 rounded-[2.5rem] mb-12">
-            <h3 class="font-bold text-xs uppercase tracking-widest mb-8 border-b pb-4 italic text-stone-400">1. Escolha seus serviços</h3>
+        <div class="glass p-8 rounded-[2.5rem] mb-12 shadow-sm">
+            <h3 class="font-bold text-xs uppercase tracking-widest mb-8 border-b pb-4 italic text-stone-400">1. Selecione os serviços</h3>
             <div id="services-grid" class="space-y-4"></div>
             <div id="total-bar" class="hidden mt-10 pt-8 border-t flex justify-between items-center text-stone-900">
                 <span id="display-total" class="text-3xl font-bold italic tracking-tighter">R$ 0,00</span>
-                <button onclick="window.showStep2()" class="btn-theme px-10 py-4 uppercase text-[10px] shadow-xl">Próximo</button>
+                <button onclick="window.showStep2()" class="btn-theme px-10 py-4 uppercase text-[10px] shadow-xl">Próximo Passo</button>
             </div>
         </div>
 
@@ -65,8 +65,8 @@
 
         <section id="step-3" class="hidden glass p-10 rounded-[3rem] mb-20 space-y-6 shadow-2xl">
             <input type="text" id="c-name" placeholder="Seu nome completo">
-            <input type="tel" id="c-phone" placeholder="Seu WhatsApp">
-            <button onclick="window.saveBooking()" class="w-full btn-theme py-6 shadow-2xl uppercase text-[11px]">Finalizar Reserva</button>
+            <input type="tel" id="c-phone" placeholder="Seu WhatsApp (com DDD)">
+            <button onclick="window.saveBooking()" class="w-full btn-theme py-6 shadow-2xl uppercase text-[11px]">Finalizar Agendamento</button>
         </section>
 
         <section class="mt-20 p-12 glass rounded-[3.5rem] text-center border-stone-100">
@@ -79,21 +79,21 @@
     <!-- [ADMIN] -->
     <main id="view-admin" class="view-section max-w-6xl mx-auto p-6 pb-24">
         <div class="flex justify-between items-center mb-10 text-stone-800">
-            <h2 class="text-3xl font-bold italic">Painel Administrativo</h2>
+            <h2 class="text-3xl font-bold italic underline decoration-gold/30">Dashboard de Gestão</h2>
             <button onclick="window.setView('cliente')" class="text-[10px] font-bold text-stone-400 border px-4 py-2 rounded-xl">Ver Site</button>
         </div>
 
         <div class="flex gap-4 mb-10 border-b overflow-x-auto text-stone-400">
-            <button onclick="window.showTab('agenda')" id="tab-agenda" class="tab-btn pb-4 text-xs font-bold active uppercase tracking-widest">Agenda</button>
-            <button onclick="window.showTab('grade')" id="tab-grade" class="tab-btn pb-4 text-xs font-bold uppercase tracking-widest">Bloqueio</button>
-            <button onclick="window.showTab('servicos')" id="tab-servicos" class="tab-btn pb-4 text-xs font-bold uppercase tracking-widest">Serviços</button>
-            <button onclick="window.showTab('config')" id="tab-config" class="tab-btn pb-4 text-xs font-bold uppercase tracking-widest">Configuração</button>
+            <button onclick="window.showTab('agenda')" id="tab-agenda" class="tab-btn pb-4 text-xs font-bold active uppercase">Agenda</button>
+            <button onclick="window.showTab('grade')" id="tab-grade" class="tab-btn pb-4 text-xs font-bold uppercase">Bloqueio</button>
+            <button onclick="window.showTab('servicos')" id="tab-servicos" class="tab-btn pb-4 text-xs font-bold uppercase">Serviços</button>
+            <button onclick="window.showTab('config')" id="tab-config" class="tab-btn pb-4 text-xs font-bold uppercase">Studio & Cores</button>
         </div>
 
         <!-- AGENDA -->
         <section id="content-agenda" class="tab-content">
             <div class="glass p-8 rounded-[2rem] mb-10 text-center">
-                <p class="text-stone-400 text-[10px] uppercase font-bold mb-1">Lucro Estimado (Atendidos)</p>
+                <p class="text-stone-400 text-[10px] uppercase font-bold mb-1">Lucro Estimado</p>
                 <h3 id="stat-profit" class="text-5xl font-bold tracking-tighter italic">R$ 0,00</h3>
             </div>
             <div id="admin-list" class="space-y-4"></div>
@@ -104,7 +104,7 @@
             <div class="glass p-10 rounded-[3rem] space-y-8">
                 <div>
                     <h4 class="font-bold text-xs uppercase text-stone-400 mb-6 italic">Cores do Site</h4>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-stone-800">
                         <button onclick="window.setTheme('nude-gold')" class="p-4 border rounded-2xl flex flex-col items-center gap-2">
                             <div class="w-8 h-8 rounded-full" style="background:#C5A059; border:3px solid #FAF9F6"></div>
                             <span class="text-[10px] font-bold">Nude & Gold</span>
@@ -136,16 +136,17 @@
             </div>
         </section>
 
-        <!-- TABS AUXILIARES (SERVICOS E GRADE) -->
+        <!-- SERVIÇOS -->
         <section id="content-servicos" class="tab-content hidden">
-            <div class="glass p-8 rounded-[2rem] mb-10"><div class="flex gap-4"><input type="text" id="add-s-name" placeholder="Serviço" class="flex-1"><input type="text" id="add-s-price" placeholder="Preço"><button onclick="window.addService()" class="btn-theme px-8 text-xs uppercase">Salvar</button></div></div>
+            <div class="glass p-8 rounded-[2rem] mb-10 text-stone-900"><div class="flex gap-4"><input type="text" id="add-s-name" placeholder="Serviço" class="flex-1"><input type="text" id="add-s-price" placeholder="Preço"><button onclick="window.addService()" class="btn-theme px-8 text-xs uppercase">Salvar</button></div></div>
             <div id="admin-services-list" class="grid md:grid-cols-2 gap-4 text-stone-900"></div>
         </section>
+
+        <!-- GRADE -->
         <section id="content-grade" class="tab-content hidden text-center"><div class="glass p-10 rounded-[3rem]"><input type="date" id="adm-grade-date" class="w-full mb-8" onchange="window.loadAdminGrade()"><div id="admin-hours-grid" class="grid grid-cols-4 gap-3"></div></div></section>
     </main>
 
     <script type="module">
-        // --- COLOQUE AS CHAVES DO SUPABASE DO SEU CLIENTE AQUI ---
         const _URL = "https://qgtwwquyczdvbzyztflj.supabase.co";
         const _KEY = "sb_publishable_RtSSiajrgU-R9OAN9RiAuA_VMVvqkOZ";
         const supabase = window.supabase.createClient(_URL, _KEY);
@@ -165,7 +166,7 @@
             document.documentElement.style.setProperty('--primary', t.primary);
             document.documentElement.style.setProperty('--bg', t.bg);
             document.documentElement.style.setProperty('--text', t.text);
-            document.documentElement.style.setProperty('--card-bg', t.card);
+            document.documentElement.style.setProperty('--card', t.card);
             window.currentTheme = tId;
         };
 
@@ -211,7 +212,7 @@
             const { data: booked } = await supabase.from('agendamentos').select('horario').eq('data', date).neq('status', 'Desmarcado');
             const taken = booked.map(b => b.horario);
             grid.innerHTML = '';
-            for(let h = 8; h < 19; h++) {
+            for(let h = studioCfg.hora_abertura; h < studioCfg.hora_fechamento; h++) {
                 ['00', '30'].forEach(m => {
                     const hour = `${String(h).padStart(2,'0')}:${m}`;
                     const isT = taken.includes(hour);
@@ -223,6 +224,7 @@
                         document.querySelectorAll('.hour-pill').forEach(p => p.classList.remove('selected'));
                         btn.classList.add('selected');
                         document.getElementById('step-3').classList.remove('hidden');
+                        document.getElementById('step-3').scrollIntoView({behavior:'smooth'});
                     };
                     grid.appendChild(btn);
                 });
@@ -241,7 +243,7 @@
                 data: date, horario: window.selectedHour, valor_total: total
             }]);
             if(!error) {
-                const msg = `💎 *CONFIRMAÇÃO DE AGENDAMENTO* 💎\n\nOlá ${studioCfg.nome_studio}! Sou *${name}* e agendei pelo site:\n\n🛠 *Serviços:* ${servsNames}\n📅 *Data:* ${date.split('-').reverse().join('/')}\n⏰ *Horário:* ${window.selectedHour}\n📍 *Local:* ${studioCfg.endereco}\n\n_Pode me confirmar?_ ✨🥂`;
+                const msg = `✨ *CONFIRMAÇÃO DE AGENDAMENTO* ✨\n\nOlá ${studioCfg.nome_studio}! Sou *${name}* e agendei pelo site.\n\n🛠 *Serviços:* ${servsNames}\n📅 *Data:* ${date.split('-').reverse().join('/')}\n⏰ *Horário:* ${window.selectedHour}\n\n_Pode me confirmar?_ ✨🥂`;
                 window.open(`https://wa.me/${studioCfg.whatsapp}?text=${encodeURIComponent(msg)}`);
                 location.reload();
             }
@@ -255,16 +257,16 @@
                 if(a.status === 'Atendido') profit += parseFloat(a.valor_total);
                 if(a.status === 'Bloqueado') return;
                 list.innerHTML += `
-                    <div class="glass p-6 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-6 shadow-sm border-stone-50">
+                    <div class="glass p-6 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-6 shadow-sm">
                         <div class="text-stone-900">
                             <span class="status-badge ${a.status==='Atendido'?'bg-green-100 text-green-700':'bg-blue-100 text-blue-700'}">${a.status}</span>
-                            <h4 class="font-bold text-xl mt-2">${a.cliente_nome}</h4>
-                            <p class="text-xs opacity-50 italic">${a.servicos_escolhidos} • ${a.data} • ${a.horario}</p>
+                            <h4 class="font-bold text-xl mt-2 leading-none">${a.cliente_nome}</h4>
+                            <p class="text-xs opacity-50 italic mt-2">${a.servicos_escolhidos} • ${a.horario}</p>
                         </div>
                         <div class="flex items-center gap-4">
-                            <span class="font-bold text-xl italic tracking-tighter text-stone-900">R$ ${a.valor_total}</span>
+                            <span class="font-bold text-xl italic tracking-tighter text-stone-900 leading-none">R$ ${a.valor_total}</span>
                             <div class="flex flex-col gap-1">
-                                <button onclick="window.upStat('${a.id}','Atendido')" class="text-[9px] bg-stone-900 text-white px-4 py-2 rounded-lg font-bold uppercase">Finalizar</button>
+                                <button onclick="window.upStat('${a.id}','Atendido')" class="text-[9px] bg-stone-900 text-white px-4 py-2 rounded-lg font-bold uppercase">Concluir</button>
                                 <button onclick="window.delBooking('${a.id}')" class="text-[9px] bg-red-100 text-red-600 border border-red-200 px-4 py-2 rounded-lg font-bold uppercase">Apagar</button>
                                 <button onclick="window.sendRemind('${a.cliente_whatsapp}', '${a.cliente_nome}', '${a.horario}', '${a.servicos_escolhidos}')" class="text-[9px] bg-emerald-50 text-emerald-700 border border-emerald-100 px-4 py-2 rounded-lg font-bold uppercase mt-1">Lembrar</button>
                             </div>
@@ -284,7 +286,7 @@
             const grid = document.getElementById('admin-hours-grid');
             const { data: booked } = await supabase.from('agendamentos').select('*').eq('data', date);
             grid.innerHTML = '';
-            for(let h = 8; h < 19; h++) {
+            for(let h = studioCfg.hora_abertura; h < studioCfg.hora_fechamento; h++) {
                 ['00', '30'].forEach(m => {
                     const hour = `${String(h).padStart(2,'0')}:${m}`;
                     const appt = booked.find(b => b.horario === hour);
@@ -331,6 +333,7 @@
                 window.setTheme(data.tema || 'nude-gold');
                 document.getElementById('brand-name').innerText = data.nome_studio;
                 document.getElementById('link-insta').href = data.instagram_url;
+                document.getElementById('client-slogan').innerText = data.slogan;
                 document.getElementById('display-address').innerText = data.endereco;
                 document.getElementById('btn-maps').href = data.link_maps;
                 
